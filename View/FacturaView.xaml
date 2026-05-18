@@ -1,0 +1,529 @@
+<Window x:Class="Gestion.Views.FacturaView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Gestión de Facturas"
+        Height="680" Width="900"
+        WindowStartupLocation="CenterScreen"
+        Background="#0F1923">
+
+    <Window.Resources>
+        <Style x:Key="SidebarButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#90A4B4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="20,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1A2633"/>
+                                <Setter Property="Foreground" Value="#E8F0F7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ActiveSidebarButton" TargetType="Button" BasedOn="{StaticResource SidebarButton}">
+            <Setter Property="Background" Value="#1A2633"/>
+            <Setter Property="Foreground" Value="#4FC3F7"/>
+        </Style>
+
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#1A2633"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="20"/>
+        </Style>
+
+        <Style x:Key="FormLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#90A4B4"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+
+        <Style x:Key="FormInput" TargetType="TextBox">
+            <Setter Property="Background" Value="#0F1923"/>
+            <Setter Property="Foreground" Value="#E8F0F7"/>
+            <Setter Property="BorderBrush" Value="#2A3F55"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Height" Value="38"/>
+        </Style>
+
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Background" Value="#1565C0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1976D2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#B71C1C"/>
+        </Style>
+
+        <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#2E7D32"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ===== SIDEBAR ===== -->
+        <Border Grid.Column="0" Background="#0A1520">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="20,24,20,32">
+                    <TextBlock Text="GESTIÓN"
+                               Foreground="#4FC3F7"
+                               FontSize="18"
+                               FontFamily="Segoe UI Light"/>
+                    <TextBlock Text="MÉDICA"
+                               Foreground="#E8F0F7"
+                               FontSize="18"
+                               FontFamily="Segoe UI SemiBold"
+                               Margin="0,-4,0,0"/>
+                    <Rectangle Height="1" Fill="#1A2633" Margin="0,16,0,0"/>
+                </StackPanel>
+
+                <TextBlock DockPanel.Dock="Top"
+                   Text="FACTURACIÓN"
+                   Foreground="#3A5470"
+                   FontSize="9"
+                   FontFamily="Segoe UI"
+                   Margin="20,0,0,12"/>
+
+                <StackPanel DockPanel.Dock="Top">
+                    <Button Content="▪  Consultar Factura"
+                            Style="{StaticResource ActiveSidebarButton}"
+                            Click="NavConsultar_Click"/>
+                    <Button Content="▪  Crear Factura"
+                            Style="{StaticResource SidebarButton}"
+                            Click="NavCrear_Click"/>
+                    <Button Content="▪  Facturas por Usuario"
+                            Style="{StaticResource SidebarButton}"
+                            Click="NavUsuario_Click"/>
+                    <Button Content="▪  Generar PDF"
+                            Style="{StaticResource SidebarButton}"
+                            Click="NavPdf_Click"/>
+                    <Button Content="▪  Cancelar Factura"
+                            Style="{StaticResource SidebarButton}"
+                            Foreground="#EF9A9A"
+                            Click="NavCancelar_Click"/>
+                </StackPanel>
+
+                <Button DockPanel.Dock="Bottom"
+                        Content="Cerrar sesión"
+                        Style="{StaticResource SidebarButton}"
+                        Foreground="#EF5350"
+                        Margin="0,0,0,16"
+                        Click="BtnLogout_Click"/>
+            </DockPanel>
+        </Border>
+
+        <!-- ===== CONTENIDO ===== -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="56"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="#0A1520" Padding="24,0">
+                <TextBlock x:Name="TxtPageTitle"
+                           Text="Consultar Factura"
+                           Foreground="#E8F0F7"
+                           FontSize="15"
+                           FontFamily="Segoe UI SemiBold"
+                           VerticalAlignment="Center"/>
+            </Border>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24">
+                <StackPanel Margin="0,0,0,24">
+
+                    <!-- === PANEL: CONSULTAR FACTURA === -->
+                    <StackPanel x:Name="PanelConsultar">
+                        <Border Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="CONSULTAR FACTURA"
+                                           Foreground="#4FC3F7"
+                                           FontSize="10"
+                                           FontFamily="Segoe UI SemiBold"
+                                           Margin="0,0,0,14"/>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="120"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="TxtFacturaId"
+                                             Style="{StaticResource FormInput}"
+                                             Margin="0,0,10,0"/>
+                                    <Button Grid.Column="1"
+                                            Content="Buscar"
+                                            Style="{StaticResource ActionButton}"
+                                            Click="BtnObtenerFactura_Click"/>
+                                </Grid>
+
+                                <!-- Detalle de factura -->
+                                <Border x:Name="PanelDetalleFactura"
+                                        Background="#0F1923"
+                                        CornerRadius="4"
+                                        Padding="16"
+                                        Visibility="Collapsed">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="ID FACTURA" Style="{StaticResource FormLabel}"/>
+                                            <TextBlock x:Name="TxtDetId"
+                                                       Foreground="#4FC3F7"
+                                                       FontSize="14"
+                                                       FontFamily="Segoe UI SemiBold"
+                                                       Margin="0,0,0,12"/>
+                                            <TextBlock Text="USUARIO" Style="{StaticResource FormLabel}"/>
+                                            <TextBlock x:Name="TxtDetUsuario"
+                                                       Foreground="#E8F0F7"
+                                                       FontSize="13"
+                                                       FontFamily="Segoe UI"
+                                                       Margin="0,0,0,12"/>
+                                            <TextBlock Text="FECHA" Style="{StaticResource FormLabel}"/>
+                                            <TextBlock x:Name="TxtDetFecha"
+                                                       Foreground="#E8F0F7"
+                                                       FontSize="13"
+                                                       FontFamily="Segoe UI"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="TOTAL" Style="{StaticResource FormLabel}"/>
+                                            <TextBlock x:Name="TxtDetTotal"
+                                                       Foreground="#66BB6A"
+                                                       FontSize="28"
+                                                       FontFamily="Segoe UI Light"
+                                                       Margin="0,0,0,12"/>
+                                            <TextBlock Text="ESTADO" Style="{StaticResource FormLabel}"/>
+                                            <Border Background="#1A3350"
+                                                    CornerRadius="10"
+                                                    Padding="10,4"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock x:Name="TxtDetEstado"
+                                                           Foreground="#4FC3F7"
+                                                           FontSize="12"
+                                                           FontFamily="Segoe UI SemiBold"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- === PANEL: CREAR FACTURA === -->
+                    <StackPanel x:Name="PanelCrear" Visibility="Collapsed">
+                        <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="CREAR NUEVA FACTURA"
+                                           Foreground="#4FC3F7"
+                                           FontSize="10"
+                                           FontFamily="Segoe UI SemiBold"
+                                           Margin="0,0,0,14"/>
+                                <TextBlock Text="ID USUARIO" Style="{StaticResource FormLabel}"/>
+                                <TextBox x:Name="TxtNuevaFacturaUsuario"
+                                         Style="{StaticResource FormInput}"
+                                         Margin="0,0,0,16"/>
+
+                                <!-- Items -->
+                                <TextBlock Text="ÍTEMS DE LA FACTURA"
+                                           Foreground="#90A4B4"
+                                           FontSize="10"
+                                           FontFamily="Segoe UI SemiBold"
+                                           Margin="0,0,0,10"/>
+
+                                <!-- Encabezado de ítems -->
+                                <Grid Background="#0A1520" Margin="0,0,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="DESCRIPCIÓN"
+                                               Foreground="#90A4B4"
+                                               FontSize="10"
+                                               FontFamily="Segoe UI SemiBold"
+                                               Padding="8,6"/>
+                                    <TextBlock Grid.Column="1" Text="PRECIO"
+                                               Foreground="#90A4B4"
+                                               FontSize="10"
+                                               FontFamily="Segoe UI SemiBold"
+                                               Padding="8,6"/>
+                                    <TextBlock Grid.Column="2" Text="CANTIDAD"
+                                               Foreground="#90A4B4"
+                                               FontSize="10"
+                                               FontFamily="Segoe UI SemiBold"
+                                               Padding="8,6"/>
+                                    <TextBlock Grid.Column="3" Text=""
+                                               Padding="8,6"/>
+                                </Grid>
+
+                                <!-- Item 1 -->
+                                <Grid Background="#0F1923" Margin="0,1,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0"
+                                             x:Name="TxtItem1Desc"
+                                             Style="{StaticResource FormInput}"
+                                             Margin="1"/>
+                                    <TextBox Grid.Column="1"
+                                             x:Name="TxtItem1Precio"
+                                             Style="{StaticResource FormInput}"
+                                             Margin="1"/>
+                                    <TextBox Grid.Column="2"
+                                             x:Name="TxtItem1Cantidad"
+                                             Style="{StaticResource FormInput}"
+                                             Margin="1"/>
+                                    <TextBlock Grid.Column="3"
+                                               Text="1"
+                                               Foreground="#3A5470"
+                                               FontSize="11"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Item 2 -->
+                                <Grid Background="#0F1923" Margin="0,1,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0"
+                                             x:Name="TxtItem2Desc"
+                                             Style="{StaticResource FormInput}"
+                                             Margin="1"/>
+                                    <TextBox Grid.Column="1"
+                                             x:Name="TxtItem2Precio"
+                                             Style="{StaticResource FormInput}"
+                                             Margin="1"/>
+                                    <TextBox Grid.Column="2"
+                                             x:Name="TxtItem2Cantidad"
+                                             Style="{StaticResource FormInput}"
+                                             Margin="1"/>
+                                    <TextBlock Grid.Column="3"
+                                               Text="2"
+                                               Foreground="#3A5470"
+                                               FontSize="11"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center"/>
+                                </Grid>
+
+                                <Button Content="Crear Factura"
+                                        Style="{StaticResource SuccessButton}"
+                                        HorizontalAlignment="Right"
+                                        Margin="0,14,0,0"
+                                        Click="BtnCrearFactura_Click"/>
+                                <TextBlock x:Name="TxtMsgCrearFactura"
+                                           Foreground="#66BB6A"
+                                           FontSize="12"
+                                           FontFamily="Segoe UI"
+                                           Margin="0,8,0,0"
+                                           Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- === PANEL: FACTURAS POR USUARIO === -->
+                    <StackPanel x:Name="PanelPorUsuario" Visibility="Collapsed">
+                        <Border Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="FACTURAS DEL USUARIO"
+                                           Foreground="#4FC3F7"
+                                           FontSize="10"
+                                           FontFamily="Segoe UI SemiBold"
+                                           Margin="0,0,0,14"/>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="120"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="TxtUsuarioFacturasId"
+                                             Style="{StaticResource FormInput}"
+                                             Margin="0,0,10,0"/>
+                                    <Button Grid.Column="1"
+                                            Content="Cargar"
+                                            Style="{StaticResource ActionButton}"
+                                            Click="BtnFacturasUsuario_Click"/>
+                                </Grid>
+                                <Border Background="#0F1923" CornerRadius="4">
+                                    <StackPanel>
+                                        <Grid Background="#0A1520">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="80"/>
+                                                <ColumnDefinition Width="160"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="100"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="ID"
+                                                       Foreground="#90A4B4" FontSize="10"
+                                                       FontFamily="Segoe UI SemiBold" Padding="10,8"/>
+                                            <TextBlock Grid.Column="1" Text="FECHA"
+                                                       Foreground="#90A4B4" FontSize="10"
+                                                       FontFamily="Segoe UI SemiBold" Padding="8,8"/>
+                                            <TextBlock Grid.Column="2" Text="ESTADO"
+                                                       Foreground="#90A4B4" FontSize="10"
+                                                       FontFamily="Segoe UI SemiBold" Padding="8,8"/>
+                                            <TextBlock Grid.Column="3" Text="TOTAL"
+                                                       Foreground="#90A4B4" FontSize="10"
+                                                       FontFamily="Segoe UI SemiBold" Padding="8,8"/>
+                                        </Grid>
+                                        <ListView x:Name="LvFacturasUsuario"
+                                                  Background="Transparent"
+                                                  BorderThickness="0"
+                                                  Foreground="#E8F0F7"
+                                                  FontSize="12"
+                                                  FontFamily="Segoe UI"
+                                                  MaxHeight="260">
+                                            <ListView.View>
+                                                <GridView>
+                                                    <GridViewColumn Header="" Width="80"
+                                                                    DisplayMemberBinding="{Binding Id}"/>
+                                                    <GridViewColumn Header="" Width="160"
+                                                                    DisplayMemberBinding="{Binding Fecha}"/>
+                                                    <GridViewColumn Header="" Width="150"
+                                                                    DisplayMemberBinding="{Binding Estado}"/>
+                                                    <GridViewColumn Header="" Width="100"
+                                                                    DisplayMemberBinding="{Binding Total}"/>
+                                                </GridView>
+                                            </ListView.View>
+                                        </ListView>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- === PANEL: GENERAR PDF === -->
+                    <StackPanel x:Name="PanelPdf" Visibility="Collapsed">
+                        <Border Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="GENERAR PDF DE FACTURA"
+                                           Foreground="#4FC3F7"
+                                           FontSize="10"
+                                           FontFamily="Segoe UI SemiBold"
+                                           Margin="0,0,0,14"/>
+                                <TextBlock Text="ID DE FACTURA" Style="{StaticResource FormLabel}"/>
+                                <TextBox x:Name="TxtPdfFacturaId"
+                                         Style="{StaticResource FormInput}"
+                                         Margin="0,0,0,12"/>
+                                <TextBlock Text="RUTA DE EXPORTACIÓN" Style="{StaticResource FormLabel}"/>
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="100"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="TxtPdfRuta"
+                                             Style="{StaticResource FormInput}"
+                                             Margin="0,0,10,0"/>
+                                    <Button Grid.Column="1"
+                                            Content="Explorar"
+                                            Style="{StaticResource ActionButton}"
+                                            Click="BtnExplorarRuta_Click"/>
+                                </Grid>
+                                <Button Content="Generar PDF"
+                                        Style="{StaticResource SuccessButton}"
+                                        HorizontalAlignment="Right"
+                                        Click="BtnGenerarPdf_Click"/>
+                                <TextBlock x:Name="TxtMsgPdf"
+                                           Foreground="#66BB6A"
+                                           FontSize="12"
+                                           FontFamily="Segoe UI"
+                                           Margin="0,8,0,0"
+                                           Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- === PANEL: CANCELAR FACTURA === -->
+                    <StackPanel x:Name="PanelCancelarFactura" Visibility="Collapsed">
+                        <Border Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="CANCELAR FACTURA"
+                                           Foreground="#EF5350"
+                                           FontSize="10"
+                                           FontFamily="Segoe UI SemiBold"
+                                           Margin="0,0,0,6"/>
+                                <TextBlock Text="Esta acción marcará la factura como cancelada de forma permanente."
+                                           Foreground="#90A4B4"
+                                           FontSize="12"
+                                           FontFamily="Segoe UI"
+                                           TextWrapping="Wrap"
+                                           Margin="0,0,0,16"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="140"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="TxtCancelarFacturaId"
+                                             Style="{StaticResource FormInput}"
+                                             Margin="0,0,10,0"/>
+                                    <Button Grid.Column="1"
+                                            Content="Cancelar"
+                                            Style="{StaticResource DangerButton}"
+                                            Click="BtnCancelarFactura_Click"/>
+                                </Grid>
+                                <TextBlock x:Name="TxtMsgCancelarFactura"
+                                           Foreground="#66BB6A"
+                                           FontSize="12"
+                                           FontFamily="Segoe UI"
+                                           Margin="0,10,0,0"
+                                           Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Window>
