@@ -102,7 +102,8 @@ namespace GestionMedica.Services
                 }
                 catch (Exception ex)
                 {
-                    
+                    if (ex.InnerException != null)
+                        Debug.WriteLine($"[InnerException] {ex.InnerException.Message}");
                 }
             }
 
@@ -201,7 +202,7 @@ namespace GestionMedica.Services
                 }
                 catch(Exception ex)
                 {
-                    Debug.WriteLine("");
+                    Debug.WriteLine($"[Exception] {ex.Message}");
                 }
             }
 
@@ -302,39 +303,35 @@ namespace GestionMedica.Services
 
                 var mensaje = new MimeMessage();
 
-                mensaje.From.Add(
-                    new MailboxAddress(
-                        "Sistema Médico",
-                        mailFrom));
+                mensaje.From.Add(new MailboxAddress("Sistema Médico", mailFrom));
 
-                mensaje.To.Add(
-                    MailboxAddress.Parse(correo));
+                mensaje.To.Add(MailboxAddress.Parse(correo));
 
                 mensaje.Subject = "Confirmación de Cita Médica";
 
                 mensaje.Body = new TextPart("html")
                 {
                     Text = $@"
-            <h2>Confirmación de Cita</h2>
+                        <h2>Confirmación de Cita</h2>
 
-            <p>Su cita ha sido agendada correctamente.</p>
+                        <p>Su cita ha sido agendada correctamente.</p>
 
-            <hr>
+                        <hr>
 
-            <p><b>Paciente:</b> {cita.Paciente}</p>
+                        <p><b>Paciente:</b> {cita.Paciente}</p>
 
-            <p><b>Fecha:</b> {cita.FechaHora:dd/MM/yyyy}</p>
+                        <p><b>Fecha:</b> {cita.FechaHora:dd/MM/yyyy}</p>
 
-            <p><b>Hora:</b> {cita.FechaHora:hh:mm tt}</p>
+                        <p><b>Hora:</b> {cita.FechaHora:hh:mm tt}</p>
 
-            <p><b>Especialidad:</b> {cita.IdEspecialidad}</p>
+                        <p><b>Especialidad:</b> {cita.IdEspecialidad}</p>
 
-            <p><b>Estado:</b> {cita.Estado}</p>
+                        <p><b>Estado:</b> {cita.Estado}</p>
 
-            <hr>
+                        <hr>
 
-            <p>Gracias por usar nuestro sistema.</p>
-            "
+                        <p>Gracias por usar nuestro sistema.</p>
+                        "
                 };
 
                 using (var cliente = new MailKit.Net.Smtp.SmtpClient())
