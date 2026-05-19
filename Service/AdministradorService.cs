@@ -336,28 +336,17 @@ namespace GestionMedica.Services
 
                 using (var cliente = new MailKit.Net.Smtp.SmtpClient())
                 {
-                    // Ignorar SSL local (solo desarrollo)
                     cliente.ServerCertificateValidationCallback =
                         (s, c, h, e) => true;
 
-                    // Timeout
                     cliente.Timeout = 10000;
 
-                    // Conexión SSL directa
-                    await cliente.ConnectAsync(
-                        "smtp.gmail.com",
-                        465,
-                        SecureSocketOptions.SslOnConnect);
+                    await cliente.ConnectAsync("smtp.gmail.com", 465, SecureSocketOptions.SslOnConnect);
 
-                    // Login Gmail
-                    await cliente.AuthenticateAsync(
-                        mailFrom,
-                        mailPassword);
+                    await cliente.AuthenticateAsync(mailFrom, mailPassword);
 
-                    // Enviar
                     await cliente.SendAsync(mensaje);
 
-                    // Desconectar
                     await cliente.DisconnectAsync(true);
                 }
 
