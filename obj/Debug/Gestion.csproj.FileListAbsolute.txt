@@ -110,3 +110,4 @@ C:\Users\alram\source\repos\Gestion\bin\Debug\System.ValueTuple.xml
 C:\Users\alram\source\repos\Gestion\obj\Debug\Gestion.csproj.Up2Date
 C:\Users\alram\source\repos\Gestion\obj\Debug\Gestion.exe
 C:\Users\alram\source\repos\Gestion\obj\Debug\Gestion.pdb
+C:\Users\alram\source\repos\Gestion\obj\Debug\Gestion.exe.config

@@ -1,4 +1,4 @@
-﻿using Gestion.Controller;
+using Gestion.Controller;
 using Gestion.Model;
 using System;
 using System.Collections.Generic;
@@ -26,14 +26,14 @@ namespace Gestion.Views
                                             ("Consulta + Eco — $200.000",  200000m) },
                 ["Dermatología"] = new List<(string, decimal)> { ("Consulta básica — $65.000",   65000m),
                                             ("Consulta + biopsia — $150.000", 150000m) },
+                ["Oftalmología"] = new List<(string, decimal)> { ("Consulta básica — $70.000",   70000m),
+                                            ("Consulta + examen visual — $130.000", 130000m) },
+                ["Ortopedia"] = new List<(string, decimal)> { ("Consulta básica — $75.000",   75000m),
+                                            ("Consulta + Rx — $120.000",   120000m) },
                 ["Pediatría"] = new List<(string, decimal)> { ("Consulta básica — $55.000",   55000m),
                                             ("Consulta + vacuna — $90.000",  90000m) },
                 ["Neurología"] = new List<(string, decimal)> { ("Consulta básica — $90.000",   90000m),
                                             ("Consulta + EEG — $180.000",  180000m) },
-                ["Ginecología"] = new List<(string, decimal)> { ("Consulta básica — $70.000",   70000m),
-                                            ("Consulta + ecografía — $140.000", 140000m) },
-                ["Ortopedia"] = new List<(string, decimal)> { ("Consulta básica — $75.000",   75000m),
-                                            ("Consulta + Rx — $120.000",   120000m) },
                 ["Medicina General"] = new List<(string, decimal)> { ("Consulta básica — $45.000",   45000m),
                                             ("Consulta prioritaria — $65.000", 65000m) },
             };
@@ -264,7 +264,7 @@ namespace Gestion.Views
             }
 
             // — Verificar disponibilidad
-            var especialidad = (TipoEspecialidad)CmbEspecialidad.SelectedIndex;
+            var especialidad = (TipoEspecialidad)(CmbEspecialidad.SelectedIndex + 1);
             var (_, _, disponible) = await _adminController.VerificarDisponibilidad(fecha, especialidad);
 
             if (!disponible)
@@ -281,7 +281,8 @@ namespace Gestion.Views
                 FechaHora = fecha,
                 IdEspecialidad = especialidad,
                 Estado = EstadoCita.Pendiente,
-                Precio = precio
+                Precio = precio,
+                Paciente = $"{_usuarioActual.Nombre} {_usuarioActual.Apellido}".Trim()
             };
 
             var doctorCtrl = new DoctorController();
@@ -292,6 +293,8 @@ namespace Gestion.Views
                 MostrarFeedback(TxtMsgBuscarCita, $"No se pudo agendar: {msgCita}", esError: true);
                 return;
             }
+
+            await _adminController.EnviarCorreo(_usuarioActual.Correo, nuevaCita);
 
             var factura = new Factura
             {

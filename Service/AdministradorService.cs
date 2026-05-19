@@ -294,59 +294,84 @@ namespace GestionMedica.Services
                     return false;
                 }
 
-                // TLS moderno
-                System.Net.ServicePointManager.SecurityProtocol =
-                    System.Net.SecurityProtocolType.Tls12;
+                // ── Si el objeto llegó incompleto, recargarlo desde BD usando su Id ──
+                if (cita.FechaHora == DateTime.MinValue && cita.Id > 0)
+                {
+                    cita = await ObtenerCitaCompletaPorId(cita.Id, correo) ?? cita;
+                }
 
-                string mailFrom = "juandavidbarriosperneth@gmail.com";
+                if (cita.FechaHora == DateTime.MinValue)
+                {
+                    MessageBox.Show("No se pudo obtener la fecha de la cita. Intente de nuevo.");
+                    return false;
+                }
+
+                string mailFrom    = "juandavidbarriosperneth@gmail.com";
                 string mailPassword = "qoozcmuiahwkgtxg";
 
+                string especialidadTexto;
+                switch (cita.IdEspecialidad)
+                {
+                    case TipoEspecialidad.Cardiologia: especialidadTexto = "Cardiología"; break;
+                    case TipoEspecialidad.Dermatologia: especialidadTexto = "Dermatología"; break;
+                    case TipoEspecialidad.Oftalmologia: especialidadTexto = "Oftalmología"; break;
+                    case TipoEspecialidad.Ortopedia: especialidadTexto = "Ortopedia"; break;
+                    case TipoEspecialidad.Pediatria: especialidadTexto = "Pediatría"; break;
+                    case TipoEspecialidad.Neurologia: especialidadTexto = "Neurología"; break;
+                    case TipoEspecialidad.General: especialidadTexto = "Medicina General"; break;
+                    default: especialidadTexto = cita.IdEspecialidad.ToString(); break;
+                }
+
+                string estadoTexto;
+                switch (cita.Estado)
+                {
+                    case EstadoCita.Pendiente: estadoTexto = "Pendiente"; break;
+                    case EstadoCita.Confirmada: estadoTexto = "Confirmada"; break;
+                    case EstadoCita.Cancelada: estadoTexto = "Cancelada"; break;
+                    case EstadoCita.Completada: estadoTexto = "Completada"; break;
+                    default: estadoTexto = cita.Estado.ToString(); break;
+                }
+
+                string pacienteNombre = !string.IsNullOrWhiteSpace(cita.Paciente)
+                    ? cita.Paciente
+                    : "N/A";
+
                 var mensaje = new MimeMessage();
-
                 mensaje.From.Add(new MailboxAddress("Sistema Médico", mailFrom));
-
                 mensaje.To.Add(MailboxAddress.Parse(correo));
-
                 mensaje.Subject = "Confirmación de Cita Médica";
 
                 mensaje.Body = new TextPart("html")
                 {
-                    Text = $@"
-                        <h2>Confirmación de Cita</h2>
-
-                        <p>Su cita ha sido agendada correctamente.</p>
-
-                        <hr>
-
-                        <p><b>Paciente:</b> {cita.Paciente}</p>
-
-                        <p><b>Fecha:</b> {cita.FechaHora:dd/MM/yyyy}</p>
-
-                        <p><b>Hora:</b> {cita.FechaHora:hh:mm tt}</p>
-
-                        <p><b>Especialidad:</b> {cita.IdEspecialidad}</p>
-
-                        <p><b>Estado:</b> {cita.Estado}</p>
-
-                        <hr>
-
-                        <p>Gracias por usar nuestro sistema.</p>
-                        "
+                    Text = $@"<!DOCTYPE html>
+                                <html>
+                                <body style='font-family:Segoe UI,Arial,sans-serif; color:#1A2633; max-width:520px; margin:auto;'>
+                                <div style='background:#1565C0; padding:24px 32px; border-radius:8px 8px 0 0;'>
+                                    <h2 style='color:white; margin:0;'> Confirmación de Cita Médica</h2>
+                                </div>
+                                <div style='background:#F4F8FB; padding:24px 32px; border-radius:0 0 8px 8px; border:1px solid #D0E3F0;'>
+                                    <p style='font-size:15px;'>Su cita ha sido agendada correctamente.</p>
+                                    <table style='width:100%; border-collapse:collapse; margin-top:12px;'>
+                                    <tr><td style='padding:8px 0; color:#555; width:130px;'><b>Paciente:</b></td><td style='padding:8px 0;'>{pacienteNombre}</td></tr>
+                                    <tr style='background:#E8F4FD;'><td style='padding:8px 6px; color:#555;'><b>Fecha:</b></td><td style='padding:8px 6px;'>{cita.FechaHora:dd/MM/yyyy}</td></tr>
+                                    <tr><td style='padding:8px 0; color:#555;'><b>Hora:</b></td><td style='padding:8px 0;'>{cita.FechaHora:HH:mm}</td></tr>
+                                    <tr style='background:#E8F4FD;'><td style='padding:8px 6px; color:#555;'><b>Especialidad:</b></td><td style='padding:8px 6px;'>{especialidadTexto}</td></tr>
+                                    <tr><td style='padding:8px 0; color:#555;'><b>Estado:</b></td><td style='padding:8px 0;'><span style='background:#1565C0;color:white;padding:2px 10px;border-radius:10px;font-size:13px;'>{estadoTexto}</span></td></tr>
+                                    </table>
+                                    <hr style='border:none;border-top:1px solid #D0E3F0; margin:20px 0;'/>
+                                    <p style='color:#666; font-size:13px;'>Gracias por usar nuestro sistema de gestión médica.</p>
+                                </div>
+                                </body>
+                                </html>"
                 };
 
                 using (var cliente = new MailKit.Net.Smtp.SmtpClient())
                 {
-                    cliente.ServerCertificateValidationCallback =
-                        (s, c, h, e) => true;
-
+                    cliente.ServerCertificateValidationCallback = (s, c, h, e) => true;
                     cliente.Timeout = 10000;
-
                     await cliente.ConnectAsync("smtp.gmail.com", 465, SecureSocketOptions.SslOnConnect);
-
                     await cliente.AuthenticateAsync(mailFrom, mailPassword);
-
                     await cliente.SendAsync(mensaje);
-
                     await cliente.DisconnectAsync(true);
                 }
 
@@ -360,18 +385,58 @@ namespace GestionMedica.Services
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    ex.Message,
-                    "ERROR SMTP",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-
+                MessageBox.Show(ex.Message, "ERROR SMTP", MessageBoxButton.OK, MessageBoxImage.Error);
                 Debug.WriteLine(ex.ToString());
-
                 return false;
             }
         }
 
+        private async Task<Citas> ObtenerCitaCompletaPorId(int citaId, string correoDestino)
+        {
+            try
+            {
+                using (var con = await dBUsuario.AbrirConexion())
+                {
+                    string query = @"SELECT c.Id,
+                                            c.IdUsuario,
+                                            c.FechaHora,
+                                            c.Estado,
+                                            c.IdEspecialidad,
+                                            c.Precio,
+                                            CONCAT(u.Nombre, ' ', COALESCE(u.Apellido,'')) AS Paciente
+                                     FROM Citas c
+                                     INNER JOIN Usuario u ON c.IdUsuario = u.Id
+                                     WHERE c.Id = @Id";
+
+                    using (var cmd = new MySqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", citaId);
+
+                        using (var reader = (MySqlDataReader)await cmd.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                return new Citas
+                                {
+                                    Id             = Convert.ToInt32(reader["Id"]),
+                                    IdUsuario      = Convert.ToInt32(reader["IdUsuario"]),
+                                    FechaHora      = Convert.ToDateTime(reader["FechaHora"]),
+                                    Estado         = (EstadoCita)Convert.ToInt32(reader["Estado"]),
+                                    IdEspecialidad = (TipoEspecialidad)Convert.ToInt32(reader["IdEspecialidad"]),
+                                    Precio         = reader["Precio"] != DBNull.Value ? Convert.ToDecimal(reader["Precio"]) : 0m,
+                                    Paciente       = reader["Paciente"]?.ToString().Trim()
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ObtenerCitaCompletaPorId] {ex.Message}");
+            }
+            return null;
+        }
         public async Task<Usuario> VerificarCredenciales(string correo, string contrasena)
         {
             using (var con = await dBUsuario.AbrirConexion())

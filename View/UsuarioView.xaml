@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Gestion.Views.UsuarioView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Mi Panel — Paciente"
+        Title="Mi Panel � Paciente"
         Height="620" Width="900"
         WindowStartupLocation="CenterScreen"
         Background="#0F1923">
@@ -136,8 +136,8 @@
         <Border Grid.Column="0" Background="#0A1520">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="20,24,20,32">
-                    <TextBlock Text="GESTIÓN" Foreground="#4FC3F7" FontSize="18" FontFamily="Segoe UI Light"/>
-                    <TextBlock Text="MÉDICA"  Foreground="#E8F0F7" FontSize="18" FontFamily="Segoe UI SemiBold" Margin="0,-4,0,0"/>
+                    <TextBlock Text="GESTI�N" Foreground="#4FC3F7" FontSize="18" FontFamily="Segoe UI Light"/>
+                    <TextBlock Text="M�DICA"  Foreground="#E8F0F7" FontSize="18" FontFamily="Segoe UI SemiBold" Margin="0,-4,0,0"/>
                     <Rectangle Height="1" Fill="#1A2633" Margin="0,16,0,0"/>
                 </StackPanel>
 
@@ -145,21 +145,21 @@
                            Foreground="#3A5470" FontSize="9" FontFamily="Segoe UI" Margin="20,0,0,12"/>
 
                 <StackPanel DockPanel.Dock="Top">
-                    <Button x:Name="BtnNavMisCitas" Content="▪  Mis Citas"
+                    <Button x:Name="BtnNavMisCitas" Content="?  Mis Citas"
                             Style="{StaticResource ActiveSidebarButton}" Click="NavMisCitas_Click"/>
-                    <Button Content="▪  Buscar Cita"
+                    <Button Content="?  Buscar Cita"
                             Style="{StaticResource SidebarButton}" Click="NavBuscarCita_Click"/>
-                    <Button Content="▪  Estado de Cita"
+                    <Button Content="?  Estado de Cita"
                             Style="{StaticResource SidebarButton}" Click="NavEstado_Click"/>
-                    <Button Content="▪  Mis Facturas"
+                    <Button Content="?  Mis Facturas"
                             Style="{StaticResource SidebarButton}" Click="NavFacturas_Click"/>
-                    <Button Content="▪  Estadísticas"
+                    <Button Content="?  Estad�sticas"
                             Style="{StaticResource SidebarButton}" Click="NavEstadisticas_Click"/>
-                    <Button Content="▪  Cancelar Cita"
+                    <Button Content="?  Cancelar Cita"
                             Style="{StaticResource SidebarButton}" Foreground="#EF9A9A" Click="NavCancelar_Click"/>
                 </StackPanel>
 
-                <Button DockPanel.Dock="Bottom" Content="Cerrar sesión"
+                <Button DockPanel.Dock="Bottom" Content="Cerrar sesi�n"
                         Style="{StaticResource SidebarButton}" Foreground="#3A5470"
                         Margin="0,0,0,16" Click="BtnLogout_Click"/>
             </DockPanel>
@@ -185,9 +185,9 @@
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24">
                 <StackPanel>
 
-                    <!-- ═══════════════════════════════════ -->
+                    <!-- ======================================= -->
                     <!-- PANEL: MIS CITAS                   -->
-                    <!-- ═══════════════════════════════════ -->
+                    <!-- ======================================= -->
                     <StackPanel x:Name="PanelMisCitas">
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel>
@@ -228,7 +228,7 @@
                                         Margin="0,12,0,0"
                                         Visibility="Collapsed">
                                     <StackPanel>
-                                        <TextBlock Text="INFORMACIÓN DE LA CITA MÉDICA"
+                                        <TextBlock Text="INFORMACI�N DE LA CITA M�DICA"
                                                    Foreground="#4FC3F7"
                                                    FontSize="10"
                                                    FontFamily="Segoe UI SemiBold"
@@ -277,9 +277,9 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- ═══════════════════════════════════ -->
+                    <!-- ======================================= -->
                     <!-- PANEL: BUSCAR Y AGENDAR CITA       -->
-                    <!-- ═══════════════════════════════════ -->
+                    <!-- ======================================= -->
                     <StackPanel x:Name="PanelBuscarCita" Visibility="Collapsed">
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel>
@@ -296,22 +296,22 @@
                                     <ComboBox.Resources>
                                         <Style TargetType="ComboBoxItem" BasedOn="{StaticResource DarkComboItem}"/>
                                     </ComboBox.Resources>
-                                    <ComboBoxItem Content="Cardiología"/>
-                                    <ComboBoxItem Content="Dermatología"/>
-                                    <ComboBoxItem Content="Pediatría"/>
-                                    <ComboBoxItem Content="Neurología"/>
-                                    <ComboBoxItem Content="Ginecología"/>
+                                    <ComboBoxItem Content="Cardiolog�a"/>
+                                    <ComboBoxItem Content="Dermatolog�a"/>
+                                    <ComboBoxItem Content="Oftalmolog�a"/>
                                     <ComboBoxItem Content="Ortopedia"/>
+                                    <ComboBoxItem Content="Pediatr�a"/>
+                                    <ComboBoxItem Content="Neurolog�a"/>
                                     <ComboBoxItem Content="Medicina General"/>
                                 </ComboBox>
 
-                                <!-- 2. PRECIO (menú desplegable, cargado dinámicamente) -->
+                                <!-- 2. PRECIO (men� desplegable, cargado din�micamente) -->
                                 <TextBlock Text="PRECIO DE LA CONSULTA" Style="{StaticResource FormLabel}"/>
                                 <ComboBox x:Name="CmbPrecioCita"
                                           Style="{StaticResource FormCombo}"
                                           Margin="0,0,0,4"
                                           IsEnabled="False">
-                                    <!-- Los ítems se agregan desde CmbEspecialidad_SelectionChanged -->
+                                    <!-- Los �tems se agregan desde CmbEspecialidad_SelectionChanged -->
                                     <ComboBox.Resources>
                                         <Style TargetType="ComboBoxItem" BasedOn="{StaticResource DarkComboItem}"/>
                                     </ComboBox.Resources>
@@ -385,9 +385,9 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- ═══════════════════════════════════ -->
+                    <!-- ======================================= -->
                     <!-- PANEL: MIS FACTURAS                -->
-                    <!-- ═══════════════════════════════════ -->
+                    <!-- ======================================= -->
                     <StackPanel x:Name="PanelFacturas" Visibility="Collapsed">
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel>
@@ -453,9 +453,9 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- ═══════════════════════════════════ -->
+                    <!-- ======================================= -->
                     <!-- PANEL: ESTADO DE CITA              -->
-                    <!-- ═══════════════════════════════════ -->
+                    <!-- ======================================= -->
                     <StackPanel x:Name="PanelEstado" Visibility="Collapsed">
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel>
@@ -492,16 +492,16 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- ═══════════════════════════════════ -->
-                    <!-- PANEL: ESTADÍSTICAS                -->
-                    <!-- ═══════════════════════════════════ -->
+                    <!-- ======================================= -->
+                    <!-- PANEL: ESTAD�STICAS                -->
+                    <!-- ======================================= -->
                     <StackPanel x:Name="PanelEstadisticas" Visibility="Collapsed">
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel>
-                                <TextBlock Text="ESTADÍSTICAS GENERALES"
+                                <TextBlock Text="ESTAD�STICAS GENERALES"
                                            Foreground="#4FC3F7" FontSize="10"
                                            FontFamily="Segoe UI SemiBold" Margin="0,0,0,14"/>
-                                <Button Content="Actualizar estadísticas"
+                                <Button Content="Actualizar estad�sticas"
                                         Style="{StaticResource ActionButton}"
                                         HorizontalAlignment="Left" Margin="0,0,0,16"
                                         Click="BtnPromedioCitas_Click"/>
@@ -590,16 +590,16 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- ═══════════════════════════════════ -->
+                    <!-- ======================================= -->
                     <!-- PANEL: CANCELAR CITA               -->
-                    <!-- ═══════════════════════════════════ -->
+                    <!-- ======================================= -->
                     <StackPanel x:Name="PanelCancelar" Visibility="Collapsed">
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel>
                                 <TextBlock Text="CANCELAR CITA"
                                            Foreground="#EF5350" FontSize="10"
                                            FontFamily="Segoe UI SemiBold" Margin="0,0,0,6"/>
-                                <TextBlock Text="Esta acción no se puede deshacer. Solo cancela si estás seguro."
+                                <TextBlock Text="Esta acci�n no se puede deshacer. Solo cancela si est�s seguro."
                                            Foreground="#90A4B4" FontSize="12" FontFamily="Segoe UI"
                                            Margin="0,0,0,16" TextWrapping="Wrap"/>
                                 <Grid>
@@ -626,3 +626,4 @@
         </Grid>
     </Grid>
 </Window>
+
