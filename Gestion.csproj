@@ -304,6 +304,12 @@
     <Compile Include="Controller\DoctorController.cs" />
     <Compile Include="Controller\FacturaController.cs" />
     <Compile Include="Controller\UsuarioController.cs" />
+    <Compile Include="Data\SqlQueries.cs" />
+    <Compile Include="Data\Repositories\MySqlRepository.cs" />
+    <Compile Include="Data\Repositories\AdministradorRepository.cs" />
+    <Compile Include="Data\Repositories\DoctorRepository.cs" />
+    <Compile Include="Data\Repositories\UsuarioRepository.cs" />
+    <Compile Include="Data\Repositories\FacturaRepository.cs" />
     <Compile Include="DB\DB.cs" />
     <Compile Include="Service\AdministradorService.cs" />
     <Compile Include="Service\DoctorService.cs" />
@@ -320,6 +326,9 @@
     </Compile>
     <Compile Include="View\LoginView.xaml.cs">
       <DependentUpon>LoginView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\LoadingWindow.xaml.cs">
+      <DependentUpon>LoadingWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\RegisterView.xaml.cs">
       <DependentUpon>RegisterView.xaml</DependentUpon>
@@ -356,6 +365,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\LoginView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\LoadingWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

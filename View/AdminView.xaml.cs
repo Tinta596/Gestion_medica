@@ -96,7 +96,10 @@ namespace Gestion.Views
             dgUsuariosAdmin.ItemsSource = null;
             txtSinUsuariosAdmin.Visibility = Visibility.Collapsed;
 
-            var (ok, msg, usuarios) = await _controller.BuscarUsuariosPorNombre(TxtBuscarId.Text);
+            var (ok, msg, usuarios) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.BuscarUsuariosPorNombre(TxtBuscarId.Text),
+                "Buscando usuarios...");
             if (!ok || usuarios == null || usuarios.Count == 0)
             {
                 txtSinUsuariosAdmin.Text = ok ? "No se encontraron doctores o pacientes con ese nombre." : msg;
@@ -156,7 +159,10 @@ namespace Gestion.Views
                 Telefono = telefono
             };
 
-            var (ok, msg) = await _controller.CrearUsuario(nuevoUsuario);
+            var (ok, msg) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.CrearUsuario(nuevoUsuario),
+                "Creando usuario...");
 
             MostrarMensajeFeedback(TxtMsgCrear, msg, esError: !ok);
 
@@ -191,7 +197,10 @@ namespace Gestion.Views
 
             if (confirmacion != MessageBoxResult.Yes) return;
 
-            var (ok, msg) = await _controller.DesactivarUsuario(id);
+            var (ok, msg) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.DesactivarUsuario(id),
+                "Actualizando usuario...");
             MostrarMensajeFeedback(TxtMsgDesactivar, msg, esError: !ok);
 
             if (ok) TxtDesactivarId.Clear();
@@ -210,7 +219,10 @@ namespace Gestion.Views
             TxtSinDoctores.Visibility = Visibility.Collapsed;
             TxtTotalDoctores.Text = "0";
 
-            var (ok, msg, doctores) = await _controller.ObtenerDoctores();
+            var (ok, msg, doctores) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.ObtenerDoctores(),
+                "Cargando informe de doctores...");
             if (!ok || doctores == null || doctores.Count == 0)
             {
                 TxtSinDoctores.Text = ok ? "No hay doctores activos registrados." : msg;
@@ -253,7 +265,10 @@ namespace Gestion.Views
                 IdRol = (int)TipoRol.Doctor
             };
 
-            var (ok, msg) = await _controller.CrearDoctor(doctor);
+            var (ok, msg) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.CrearDoctor(doctor),
+                "Registrando doctor...");
             MostrarMensajeFeedback(TxtMsgDoctor, msg, esError: !ok);
 
             if (!ok) return;
@@ -327,7 +342,10 @@ namespace Gestion.Views
             int hora = int.Parse(horaSeleccionada.Content.ToString());
             int minutos = int.Parse(minutoSeleccionado.Content.ToString());
             DateTime fecha = DpFecha.SelectedDate.Value.Date.AddHours(hora).AddMinutes(minutos);
-            var (ok, msg, disponible) = await _controller.VerificarDisponibilidad(fecha, especialidad);
+            var (ok, msg, disponible) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.VerificarDisponibilidad(fecha, especialidad),
+                "Verificando disponibilidad...");
 
             TxtResultadoDisp.Text = msg;
             TxtResultadoDisp.Foreground = new System.Windows.Media.SolidColorBrush(
@@ -353,7 +371,10 @@ namespace Gestion.Views
             txtSinCitasAdmin.Visibility = Visibility.Collapsed;
             TxtMsgConfirmarCita.Visibility = Visibility.Collapsed;
 
-            var (ok, msg, citas) = await _controller.ObtenerCitasMedicas();
+            var (ok, msg, citas) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.ObtenerCitasMedicas(),
+                "Cargando citas médicas...");
             if (!ok || citas == null || citas.Count == 0)
             {
                 txtSinCitasAdmin.Text = ok ? "No hay citas médicas pedidas." : msg;
@@ -386,7 +407,10 @@ namespace Gestion.Views
 
             if (confirmacion != MessageBoxResult.Yes) return;
 
-            var (ok, msg) = await _controller.CambiarEstadoCita(cita.Id, cita.Estado);
+            var (ok, msg) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.CambiarEstadoCita(cita.Id, cita.Estado),
+                "Actualizando estado de la cita...");
             MostrarMensajeFeedback(TxtMsgConfirmarCita, msg, esError: !ok);
         }
 
@@ -409,7 +433,10 @@ namespace Gestion.Views
             // Construir objeto Citas mínimo con el ID
             var cita = new Citas { Id = citaId };
 
-            var (ok, msg) = await _controller.EnviarCorreo(correo, cita);
+            var (ok, msg) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.EnviarCorreo(correo, cita),
+                "Enviando correo...");
             MostrarMensajeFeedback(TxtMsgCorreo, msg, esError: !ok);
 
             if (ok)

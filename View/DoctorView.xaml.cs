@@ -100,7 +100,10 @@ namespace Gestion.Views
             dgPacientes.ItemsSource = null;
             txtSinPacientes.Visibility = Visibility.Collapsed;
 
-            var (ok, msg, pacientes) = await _controller.ListarPacientes(txtBuscarPacienteNombre?.Text);
+            var (ok, msg, pacientes) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.ListarPacientes(txtBuscarPacienteNombre?.Text),
+                "Buscando pacientes...");
             if (!ok || pacientes == null || pacientes.Count == 0)
             {
                 txtSinPacientes.Text = ok ? "No hay pacientes registrados con ese nombre." : msg;
@@ -128,7 +131,10 @@ namespace Gestion.Views
                 return;
             }
 
-            var (ok, msg, paciente) = await _controller.DatosPaciente(id);
+            var (ok, msg, paciente) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.DatosPaciente(id),
+                "Cargando datos del paciente...");
 
             if (!ok)
             {
@@ -158,7 +164,10 @@ namespace Gestion.Views
             txtSinCitasPaciente.Visibility = Visibility.Collapsed;
             TxtMsgCitasPaciente.Visibility = Visibility.Collapsed;
 
-            var (ok, msg, citas) = await _controller.CitasPaciente(pacienteId);
+            var (ok, msg, citas) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.CitasPaciente(pacienteId),
+                "Cargando citas del paciente...");
             if (!ok || citas == null || citas.Count == 0)
             {
                 txtSinCitasPaciente.Text = ok ? "Este paciente no tiene citas asignadas." : msg;
@@ -189,7 +198,10 @@ namespace Gestion.Views
 
             if (confirmacion != MessageBoxResult.Yes) return;
 
-            var (ok, msg) = await _controller.CompletarCita(cita.Id);
+            var (ok, msg) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.CompletarCita(cita.Id),
+                "Actualizando la cita...");
             MostrarFeedback(TxtMsgCitasPaciente, msg, esError: !ok);
 
             if (ok && _pacienteSeleccionadoId > 0)
@@ -212,7 +224,10 @@ namespace Gestion.Views
                 return;
             }
 
-            var (ok, msg, historial) = await _controller.HistorialPaciente(id);
+            var (ok, msg, historial) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.HistorialPaciente(id),
+                "Consultando el historial clínico...");
 
             if (!ok || historial == null || historial.Count == 0)
             {
@@ -255,7 +270,10 @@ namespace Gestion.Views
                 NotasAdicionales = TxtNuevoHistNotas.Text.Trim()
             };
 
-            var (ok, msg) = await _controller.CrearHistorialClinico(historial);
+            var (ok, msg) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.CrearHistorialClinico(historial),
+                "Guardando el historial clínico...");
             MostrarFeedback(TxtMsgNuevoHist, msg, esError: !ok);
 
             if (ok)
@@ -269,7 +287,10 @@ namespace Gestion.Views
                 // Si el listado superior está mostrando este paciente, refrescamos.
                 if (int.TryParse(TxtHistorialPacienteId.Text.Trim(), out int idActual) && idActual == pacienteId)
                 {
-                    var (okList, _, lista) = await _controller.HistorialPaciente(pacienteId);
+                    var (okList, _, lista) = await LoadingDialogService.RunAsync(
+                        this,
+                        () => _controller.HistorialPaciente(pacienteId),
+                        "Actualizando el historial...");
                     if (okList && lista != null)
                     {
                         LvHistorial.ItemsSource = lista;
@@ -327,7 +348,10 @@ namespace Gestion.Views
                 Motivo = TxtCitaMotivo.Text.Trim()
             };
 
-            var (ok, msg) = await _controller.ProgramarCita(cita);
+            var (ok, msg) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.ProgramarCita(cita),
+                "Programando la cita...");
             MostrarFeedback(TxtMsgCita, msg, esError: !ok);
 
             if (ok)
@@ -370,7 +394,10 @@ namespace Gestion.Views
                 Observaciones = TxtActualizarObservaciones.Text.Trim()
             };
 
-            var (ok, msg) = await _controller.ActualizarCita(cita);
+            var (ok, msg) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.ActualizarCita(cita),
+                "Actualizando la cita...");
             MostrarFeedback(TxtMsgActualizar, msg, esError: !ok);
 
             if (ok)

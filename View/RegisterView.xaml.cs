@@ -77,7 +77,10 @@ namespace Gestion.Views
                 IdRol = (int)TipoRol.Paciente
             };
 
-            var (ok, msg) = await _controller.CrearUsuario(nuevoUsuario);
+            var (ok, msg) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.CrearUsuario(nuevoUsuario),
+                "Creando tu cuenta...");
 
             BtnRegistrar.IsEnabled = true;
             BtnRegistrar.Content = "CREAR CUENTA";

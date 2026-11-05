@@ -1,7 +1,6 @@
 using Gestion.Interface;
 using Gestion.Model;
-using GestionMedica.DB;
-using MySql.Data.MySqlClient;
+using Gestion.Data.Repositories;
 using PdfSharp.Drawing;
 using PdfSharp.Fonts;
 using PdfSharp.Pdf;
@@ -59,7 +58,7 @@ namespace GestionMedica.Services
     // ─────────────────────────────────────────────────────────────
     public class FacturaServices : IFactura
     {
-        private readonly DBUsuario db;
+        private readonly FacturaRepository _repository;
 
         static FacturaServices()
         {
@@ -69,77 +68,32 @@ namespace GestionMedica.Services
 
         public FacturaServices()
         {
-            db = new DBUsuario();
+            _repository = new FacturaRepository();
         }
 
 
         private async Task<Usuario> ObtenerUsuario(int idUsuario)
         {
-            string q = "SELECT Id, Nombre, Apellido, Correo, Telefono, Direccion FROM Usuario WHERE Id = @Id";
             try
             {
-                using (var con = await db.AbrirConexion())
-                using (var cmd = new MySqlCommand(q, con))
-                {
-                    cmd.Parameters.AddWithValue("@Id", idUsuario);
-                    using (var r = (MySqlDataReader)await cmd.ExecuteReaderAsync())
-                    {
-                        if (await r.ReadAsync())
-                        {
-                            return new Usuario
-                            {
-                                Id = Convert.ToInt32(r["Id"]),
-                                Nombre = r["Nombre"]?.ToString() ?? "",
-                                Apellido = r["Apellido"]?.ToString() ?? "",
-                                Correo = r["Correo"]?.ToString() ?? "",
-                                Telefono = r["Telefono"]?.ToString() ?? "",
-                                Direccion = r["Direccion"]?.ToString() ?? ""
-                            };
-                        }
-                    }
-                }
+                return await _repository.ObtenerUsuarioAsync(idUsuario);
             }
-            catch(Exception ex)
+            catch
             {
-                
+                return null;
             }
-            return null;
         }
 
         private async Task<Citas> ObtenerCitaPorFactura(int idFactura)
         {
-            string q = @"SELECT c.Id, c.IdUsuario, c.FechaHora, c.Estado,
-                                c.IdEspecialidad, c.Motivo, c.Observaciones, c.Precio
-                         FROM Citas c
-                         INNER JOIN Factura f ON f.IdCita = c.Id
-                         WHERE f.Id = @IdFactura";
             try
             {
-                using (var con = await db.AbrirConexion())
-                using (var cmd = new MySqlCommand(q, con))
-                {
-                    cmd.Parameters.AddWithValue("@IdFactura", idFactura);
-                    using (var r = (MySqlDataReader)await cmd.ExecuteReaderAsync())
-                    {
-                        if (await r.ReadAsync())
-                        {
-                            return new Citas
-                            {
-                                Id = Convert.ToInt32(r["Id"]),
-                                IdUsuario = Convert.ToInt32(r["IdUsuario"]),
-                                FechaHora = Convert.ToDateTime(r["FechaHora"]),
-                                Estado = (EstadoCita)Convert.ToInt32(r["Estado"]),
-                                IdEspecialidad = (TipoEspecialidad)Convert.ToInt32(r["IdEspecialidad"]),
-                                Motivo = r["Motivo"]?.ToString() ?? "",
-                                Observaciones = r["Observaciones"]?.ToString() ?? "",
-                                Precio = r["Precio"] != DBNull.Value ? Convert.ToDecimal(r["Precio"]) : 0m
-                            };
-                        }
-                    }
-                }
+                return await _repository.ObtenerCitaPorFacturaAsync(idFactura);
             }
-            catch { }
-            return null;
+            catch
+            {
+                return null;
+            }
         }
 
         private void DrawCampo(XGraphics gfx, XFont font, XFont fontBold,
@@ -153,197 +107,45 @@ namespace GestionMedica.Services
         // ── ObtenerFactura ───────────────────────────────────────
         public async Task<Factura> ObtenerFactura(int id)
         {
-            var factura = new Factura { Items = new List<FacturaItem>() };
-
-            string qFactura = "SELECT Id, IdUsuario, IdCita, Fecha, Total, Estado FROM Factura WHERE Id = @Id";
-            string qItems = "SELECT Id, FacturaId, Descripcion, Precio, Cantidad FROM FacturaItem WHERE FacturaId = @Id";
-
             try
             {
-                using (var con = await db.AbrirConexion())
-                {
-                    using (var cmd = new MySqlCommand(qFactura, con))
-                    {
-                        cmd.Parameters.AddWithValue("@Id", id);
-                        using (var r = (MySqlDataReader)await cmd.ExecuteReaderAsync())
-                        {
-                            if (await r.ReadAsync())
-                            {
-                                factura.Id = Convert.ToInt32(r["Id"]);
-                                factura.IdUsuario = Convert.ToInt32(r["IdUsuario"]);
-                                factura.IdCita = r["IdCita"] != DBNull.Value ? Convert.ToInt32(r["IdCita"]) : 0;
-                                factura.Fecha = Convert.ToDateTime(r["Fecha"]);
-                                factura.Total = r["Total"] != DBNull.Value ? Convert.ToDecimal(r["Total"]) : 0m;
-                                factura.Estado = r["Estado"]?.ToString() ?? "";
-                            }
-                        }
-                    }
-
-                    using (var cmd = new MySqlCommand(qItems, con))
-                    {
-                        cmd.Parameters.AddWithValue("@Id", id);
-                        using (var r = (MySqlDataReader)await cmd.ExecuteReaderAsync())
-                        {
-                            while (await r.ReadAsync())
-                            {
-                                factura.Items.Add(new FacturaItem
-                                {
-                                    Id = Convert.ToInt32(r["Id"]),
-                                    FacturaId = Convert.ToInt32(r["FacturaId"]),
-                                    Descripcion = r["Descripcion"]?.ToString() ?? "",
-                                    Precio = Convert.ToDecimal(r["Precio"]),
-                                    Cantidad = Convert.ToInt32(r["Cantidad"])
-                                });
-                            }
-                        }
-                    }
-                }
+                var factura = await _repository.ObtenerFacturaAsync(id);
 
                 if (factura.Total == 0m && factura.Items.Count > 0)
                     factura.Total = factura.Items.Sum(i => i.Subtotal);
-            }
-            catch { }
 
-            return factura;
+                return factura;
+            }
+            catch
+            {
+                return new Factura { Items = new List<FacturaItem>() };
+            }
         }
 
         // ── ObtenerFacturasPorUsuario ────────────────────────────
         public async Task<List<Factura>> ObtenerFacturasPorUsuario(int idUsuario)
         {
-            var lista = new List<Factura>();
-            string q = "SELECT Id, IdUsuario, IdCita, Fecha, Total, Estado FROM Factura WHERE IdUsuario = @IdUsuario";
-
             try
             {
-                await CrearFacturasFaltantesPorUsuario(idUsuario);
-
-                using (var con = await db.AbrirConexion())
-                using (var cmd = new MySqlCommand(q, con))
-                {
-                    cmd.Parameters.AddWithValue("@IdUsuario", idUsuario);
-                    using (var r = (MySqlDataReader)await cmd.ExecuteReaderAsync())
-                    {
-                        while (await r.ReadAsync())
-                        {
-                            lista.Add(new Factura
-                            {
-                                Id = Convert.ToInt32(r["Id"]),
-                                IdUsuario = Convert.ToInt32(r["IdUsuario"]),
-                                IdCita = r["IdCita"] != DBNull.Value ? Convert.ToInt32(r["IdCita"]) : 0,
-                                Fecha = Convert.ToDateTime(r["Fecha"]),
-                                Total = r["Total"] != DBNull.Value ? Convert.ToDecimal(r["Total"]) : 0m,
-                                Estado = r["Estado"]?.ToString() ?? "",
-                                Items = new List<FacturaItem>()
-                            });
-                        }
-                    }
-                }
-                
+                return await _repository.ObtenerFacturasUsuarioAsync(idUsuario);
             }
-            catch { }
-
-            return lista;
-        }
-
-        private async Task CrearFacturasFaltantesPorUsuario(int idUsuario)
-        {
-            string qFacturas = @"INSERT INTO Factura (IdUsuario, IdCita, Fecha, Total, Estado)
-                                 SELECT c.IdUsuario,
-                                        c.Id,
-                                        NOW(),
-                                        COALESCE(c.Precio, 0),
-                                        CASE WHEN c.Estado = @EstadoCancelada THEN 'Cancelada' ELSE 'Generada' END
-                                 FROM Citas c
-                                 LEFT JOIN Factura f ON f.IdCita = c.Id
-                                 WHERE c.IdUsuario = @IdUsuario
-                                   AND f.Id IS NULL
-                                   AND COALESCE(c.Precio, 0) > 0";
-
-            string qItems = @"INSERT INTO FacturaItem (FacturaId, Descripcion, Precio, Cantidad)
-                              SELECT f.Id,
-                                     CONCAT('Consulta de ', c.IdEspecialidad),
-                                     COALESCE(c.Precio, 0),
-                                     1
-                              FROM Factura f
-                              INNER JOIN Citas c ON c.Id = f.IdCita
-                              LEFT JOIN FacturaItem fi ON fi.FacturaId = f.Id
-                              WHERE c.IdUsuario = @IdUsuario
-                                AND fi.Id IS NULL
-                                AND COALESCE(c.Precio, 0) > 0";
-
-            using (var con = await db.AbrirConexion())
+            catch
             {
-                try
-                {
-                    using (var cmd = new MySqlCommand(qFacturas, con))
-                    {
-                        cmd.Parameters.AddWithValue("@IdUsuario", idUsuario);
-                        cmd.Parameters.AddWithValue("@EstadoCancelada", (int)EstadoCita.Cancelada);
-                        await cmd.ExecuteNonQueryAsync();
-                    }
-
-                    using (var cmd = new MySqlCommand(qItems, con))
-                    {
-                        cmd.Parameters.AddWithValue("@IdUsuario", idUsuario);
-                        await cmd.ExecuteNonQueryAsync();
-                    }
-                }
-                catch (MySqlException mex)
-                {
-                    if (mex.Number != 1054) throw;
-                }
+                return new List<Factura>();
             }
         }
 
         // ── CrearFactura ─────────────────────────────────────────
         public async Task<int> CrearFactura(Factura factura)
         {
-            int newId = 0;
-            string qInsert = @"INSERT INTO Factura (IdUsuario, IdCita, Fecha, Total, Estado)
-                               VALUES (@IdUsuario, @IdCita, @Fecha, @Total, @Estado);
-                               SELECT LAST_INSERT_ID();";
-            string qItem = @"INSERT INTO FacturaItem (FacturaId, Descripcion, Precio, Cantidad)
-                               VALUES (@FacturaId, @Descripcion, @Precio, @Cantidad)";
             try
             {
-                using (var con = await db.AbrirConexion())
-                using (var cmd = new MySqlCommand(qInsert, con))
-                {
-                    cmd.Parameters.AddWithValue("@IdUsuario", factura.IdUsuario);
-                    cmd.Parameters.AddWithValue("@IdCita", factura.IdCita > 0 ? (object)factura.IdCita : DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Fecha", factura.Fecha);
-                    cmd.Parameters.AddWithValue("@Total", factura.Total);
-                    cmd.Parameters.AddWithValue("@Estado", "Generada");
-                    newId = Convert.ToInt32(await cmd.ExecuteScalarAsync());
-                }
-
-                if (newId > 0 && factura.Items != null)
-                {
-                    using (var con = await db.AbrirConexion())
-                    using (var tran = await con.BeginTransactionAsync())
-                    {
-                        try
-                        {
-                            foreach (var it in factura.Items)
-                            {
-                                using (var cmd = new MySqlCommand(qItem, con, (MySqlTransaction)tran))
-                                {
-                                    cmd.Parameters.AddWithValue("@FacturaId", newId);
-                                    cmd.Parameters.AddWithValue("@Descripcion", it.Descripcion);
-                                    cmd.Parameters.AddWithValue("@Precio", it.Precio);
-                                    cmd.Parameters.AddWithValue("@Cantidad", it.Cantidad);
-                                    await cmd.ExecuteNonQueryAsync();
-                                }
-                            }
-                            await tran.CommitAsync();
-                        }
-                        catch { await tran.RollbackAsync(); throw; }
-                    }
-                }
+                return await _repository.CrearFacturaAsync(factura);
             }
-            catch { }
-
-            return newId;
+            catch
+            {
+                return 0;
+            }
         }
 
         // ── GenerarPdfFactura ────────────────────────────────────
@@ -522,16 +324,9 @@ namespace GestionMedica.Services
         // ── CancelarFactura ──────────────────────────────────────
         public async Task<bool> CancelarFactura(int id)
         {
-            string q = "UPDATE Factura SET Estado = @Estado WHERE Id = @Id";
             try
             {
-                using (var con = await db.AbrirConexion())
-                using (var cmd = new MySqlCommand(q, con))
-                {
-                    cmd.Parameters.AddWithValue("@Estado", "Cancelada");
-                    cmd.Parameters.AddWithValue("@Id", id);
-                    return await cmd.ExecuteNonQueryAsync() > 0;
-                }
+                return await _repository.CancelarFacturaAsync(id);
             }
             catch
             {

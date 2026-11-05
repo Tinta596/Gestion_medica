@@ -1,13 +1,13 @@
 ﻿using BCrypt.Net;
-using DotNetEnv;
+using Gestion.Data;
+using Gestion.Data.Repositories;
 using Gestion.Interface;
 using Gestion.Model;
-using GestionMedica.DB;
 using MailKit.Security;
 using MimeKit;
-using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,266 +16,96 @@ namespace GestionMedica.Services
 {
     public class AdministradorService : IAdministrador
     {
-        private readonly DBUsuario dBUsuario;
+        private readonly AdministradorRepository _repository;
 
         public AdministradorService()
         {
-            dBUsuario = new DBUsuario();
+            _repository = new AdministradorRepository();
         }
 
         public async Task<bool> CrearUsuarios(Usuario usuario)
         {
-            bool resultado = false;
-            MySqlConnection con = null;
             try
             {
-                
-                con = await dBUsuario.AbrirConexion();
-                
-
                 usuario.Contrasena = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasena);
-                
-                string query = @"INSERT INTO Usuario (Nombre, Apellido, Correo, Direccion, Contrasena, Activo, IdRol)
-                                 VALUES (@Nombre, @Apellido, @Correo, @Direccion, @Contrasena, @Activo, @IdRol)";
-
-                
-
-                using (MySqlCommand cmd = new MySqlCommand(query, con))
-                {
-                    cmd.Parameters.AddWithValue("@Nombre", usuario.Nombre);
-                    cmd.Parameters.AddWithValue("@Apellido", usuario.Apellido ?? string.Empty);
-                    cmd.Parameters.AddWithValue("@Correo", usuario.Correo);
-                    cmd.Parameters.AddWithValue("@Direccion", usuario.Direccion ?? string.Empty);
-                    cmd.Parameters.AddWithValue("@Contrasena", usuario.Contrasena);
-                    cmd.Parameters.AddWithValue("@Activo", true);   // nuevo usuario siempre activo
-                    cmd.Parameters.AddWithValue("@IdRol", usuario.IdRol);
-
-                    int filasAfectadas = await cmd.ExecuteNonQueryAsync();
-
-                    
-                    resultado = filasAfectadas > 0;
-                }
+                return await _repository.InsertarUsuarioAsync(usuario) > 0;
             }
             catch (Exception ex)
             {
                 if (ex.InnerException != null)
                     Debug.WriteLine($"[InnerException] {ex.InnerException.Message}");
+                return false;
             }
-            return resultado;
         }
 
         public async Task<bool> ActualizarUsuario(Usuario usuario)
         {
-            bool resultado = false;
-
-            using (var con = await dBUsuario.AbrirConexion())
+            try
             {
-                try
-                {
-                    if (!string.IsNullOrEmpty(usuario.Contrasena))
-                        usuario.Contrasena = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasena);
+                if (!string.IsNullOrEmpty(usuario.Contrasena))
+                    usuario.Contrasena = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasena);
 
-                    string query = @"UPDATE Usuario
-                                     SET Nombre=@Nombre,
-                                         Apellido=@Apellido,
-                                         Correo=@Correo,
-                                         Direccion=@Direccion,
-                                         Contrasena=@Contrasena,
-                                         Activo=@Activo,
-                                         IdRol=@IdRol
-                                     WHERE Id=@Id";
-
-                    using (MySqlCommand cmd = new MySqlCommand(query, con))
-                    {
-                        cmd.Parameters.AddWithValue("@Id", usuario.Id);
-                        cmd.Parameters.AddWithValue("@Nombre", usuario.Nombre);
-                        cmd.Parameters.AddWithValue("@Apellido", usuario.Apellido ?? string.Empty);
-                        cmd.Parameters.AddWithValue("@Correo", usuario.Correo);
-                        cmd.Parameters.AddWithValue("@Direccion", usuario.Direccion ?? string.Empty);
-                        cmd.Parameters.AddWithValue("@Contrasena", usuario.Contrasena);
-                        cmd.Parameters.AddWithValue("@Activo", usuario.Activo);
-                        cmd.Parameters.AddWithValue("@IdRol", usuario.IdRol);
-
-                        int filasAfectadas = await cmd.ExecuteNonQueryAsync();
-                        resultado = filasAfectadas > 0;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (ex.InnerException != null)
-                        Debug.WriteLine($"[InnerException] {ex.InnerException.Message}");
-                }
+                return await _repository.ActualizarUsuarioAsync(usuario) > 0;
             }
-
-            return resultado;
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                    Debug.WriteLine($"[InnerException] {ex.InnerException.Message}");
+                return false;
+            }
         }
 
         public async Task<Usuario> BuscarUsuario(int id)
         {
-            using (var con = await dBUsuario.AbrirConexion())
+            try
             {
-                try
-                {
-                    string query = "SELECT * FROM Usuario WHERE Id = @Id";
-
-                    using (MySqlCommand cmd = new MySqlCommand(query, con))
-                    {
-                        cmd.Parameters.AddWithValue("@Id", id);
-
-                        using (MySqlDataReader reader = (MySqlDataReader)await cmd.ExecuteReaderAsync())
-                        {
-                            if (await reader.ReadAsync())
-                            {
-                                return new Usuario
-                                {
-                                    Id = Convert.ToInt32(reader["Id"]),
-                                    Nombre = reader["Nombre"].ToString(),
-                                    Apellido = reader["Apellido"].ToString(),
-                                    Correo = reader["Correo"].ToString(),
-                                    Direccion = reader["Direccion"].ToString(),
-                                    Contrasena = reader["Contrasena"].ToString(),
-                                    Activo = Convert.ToBoolean(reader["Activo"]),
-                                    IdRol = Convert.ToInt32(reader["IdRol"]),
-                                    Telefono = reader["Telefono"] != DBNull.Value ? reader["Telefono"].ToString() : ""
-                                };
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (ex.InnerException != null)
-                        Debug.WriteLine($"[InnerException] {ex.InnerException.Message}");
-                }
+                return await _repository.ObtenerUsuarioAsync(id);
             }
-
-            return null;
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                    Debug.WriteLine($"[InnerException] {ex.InnerException.Message}");
+                return null;
+            }
         }
 
         public async Task<List<Usuario>> BuscarUsuariosPorNombre(string filtroNombre)
         {
-            var usuarios = new List<Usuario>();
-
-            using (var con = await dBUsuario.AbrirConexion())
+            try
             {
-                try
-                {
-                    string query = @"SELECT Id, Nombre, Apellido, Correo, Direccion, Contrasena, Activo, IdRol, Telefono
-                                     FROM Usuario
-                                     WHERE IdRol IN (@IdRolDoctor, @IdRolPaciente)
-                                       AND (
-                                           @Filtro = ''
-                                           OR Nombre LIKE @Busqueda
-                                           OR Apellido LIKE @Busqueda
-                                           OR CONCAT(Nombre, ' ', Apellido) LIKE @Busqueda
-                                           OR Correo LIKE @Busqueda
-                                       )
-                                     ORDER BY IdRol, Nombre, Apellido";
-
-                    using (MySqlCommand cmd = new MySqlCommand(query, con))
-                    {
-                        string filtro = filtroNombre?.Trim() ?? "";
-                        cmd.Parameters.AddWithValue("@IdRolDoctor", (int)TipoRol.Doctor);
-                        cmd.Parameters.AddWithValue("@IdRolPaciente", (int)TipoRol.Paciente);
-                        cmd.Parameters.AddWithValue("@Filtro", filtro);
-                        cmd.Parameters.AddWithValue("@Busqueda", "%" + filtro + "%");
-
-                        using (MySqlDataReader reader = (MySqlDataReader)await cmd.ExecuteReaderAsync())
-                        {
-                            while (await reader.ReadAsync())
-                            {
-                                usuarios.Add(new Usuario
-                                {
-                                    Id = Convert.ToInt32(reader["Id"]),
-                                    Nombre = reader["Nombre"].ToString(),
-                                    Apellido = reader["Apellido"].ToString(),
-                                    Correo = reader["Correo"].ToString(),
-                                    Direccion = reader["Direccion"].ToString(),
-                                    Contrasena = reader["Contrasena"].ToString(),
-                                    Activo = Convert.ToBoolean(reader["Activo"]),
-                                    IdRol = Convert.ToInt32(reader["IdRol"]),
-                                    Telefono = reader["Telefono"] != DBNull.Value ? reader["Telefono"].ToString() : ""
-                                });
-                            }
-                        }
-                    }
-                }
-                catch(Exception ex)
-                {
-                    Debug.WriteLine($"[Exception] {ex.Message}");
-                }
+                return await _repository.BuscarUsuariosAsync(filtroNombre);
             }
-
-            return usuarios;
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Exception] {ex.Message}");
+                return new List<Usuario>();
+            }
         }
 
         public async Task<bool> VerificarDisponibilidad(DateTime fechaHora, TipoEspecialidad especialidad)
         {
-            using (var con = await dBUsuario.AbrirConexion())
+            try
             {
-                try
-                {
-                    string query = @"SELECT COUNT(*)
-                                     FROM Citas
-                                     WHERE FechaHora = @FechaHora
-                                       AND IdEspecialidad = @IdEspecialidad
-                                       AND Estado != 3";
-
-                    using (MySqlCommand cmd = new MySqlCommand(query, con))
-                    {
-                        cmd.Parameters.AddWithValue("@FechaHora", fechaHora);
-                        cmd.Parameters.AddWithValue("@IdEspecialidad", especialidad);
-
-                        var resultado = await cmd.ExecuteScalarAsync();
-                        return Convert.ToInt32(resultado) == 0;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    
-                    return false;
-                }
+                return await _repository.VerificarDisponibilidadAsync(fechaHora, especialidad);
+            }
+            catch
+            {
+                return false;
             }
         }
 
         public async Task<List<Usuario>> ObtenerDisponiblidadDoctor()
         {
-            var lista = new List<Usuario>();
-
-            using (var con = await dBUsuario.AbrirConexion())
+            try
             {
-                try
-                {
-                    string query = @"SELECT u.Id, u.Nombre, u.Apellido, u.Correo, u.Activo, u.IdRol
-                                     FROM Usuario u
-                                     INNER JOIN Rol r ON u.IdRol = r.Id
-                                     WHERE r.Id = 2 AND u.Activo = 1";
-
-                    using (MySqlCommand cmd = new MySqlCommand(query, con))
-                    using (MySqlDataReader reader = (MySqlDataReader)await cmd.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            lista.Add(new Usuario
-                            {
-                                Id = Convert.ToInt32(reader["Id"]),
-                                Nombre = reader["Nombre"].ToString(),
-                                Apellido = reader["Apellido"].ToString(),
-                                Correo = reader["Correo"].ToString(),
-                                Activo = Convert.ToBoolean(reader["Activo"]),
-                                IdRol = Convert.ToInt32(reader["IdRol"])
-                            });
-                        }
-                    }
-                }
-                catch(Exception ex)
-                {
-                    if (ex.InnerException != null)
-                        Debug.WriteLine($"[InnerException] {ex.InnerException.Message}");
-                }
+                return await _repository.ObtenerDoctoresActivosAsync();
             }
-
-            return lista;
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                    Debug.WriteLine($"[InnerException] {ex.InnerException.Message}");
+                return new List<Usuario>();
+            }
         }
 
         public async Task<bool> EnviarConfirmacionPorCorreo(string correo, Citas cita)
@@ -306,8 +136,19 @@ namespace GestionMedica.Services
                     return false;
                 }
 
-                string mailFrom    = "juandavidbarriosperneth@gmail.com";
-                string mailPassword = "qoozcmuiahwkgtxg";
+                string mailFrom = ConfigurationManager.AppSettings["Smtp.User"];
+                string mailPassword = ConfigurationManager.AppSettings["Smtp.Password"];
+                string smtpHost = ConfigurationManager.AppSettings["Smtp.Host"];
+                string smtpPortValue = ConfigurationManager.AppSettings["Smtp.Port"];
+
+                if (string.IsNullOrWhiteSpace(mailFrom) ||
+                    string.IsNullOrWhiteSpace(mailPassword) ||
+                    string.IsNullOrWhiteSpace(smtpHost) ||
+                    !int.TryParse(smtpPortValue, out int smtpPort))
+                {
+                    throw new ConfigurationErrorsException(
+                        "Configura el usuario, contraseña, servidor y puerto SMTP en la configuración protegida.");
+                }
 
                 string especialidadTexto;
                 switch (cita.IdEspecialidad)
@@ -367,9 +208,8 @@ namespace GestionMedica.Services
 
                 using (var cliente = new MailKit.Net.Smtp.SmtpClient())
                 {
-                    cliente.ServerCertificateValidationCallback = (s, c, h, e) => true;
                     cliente.Timeout = 10000;
-                    await cliente.ConnectAsync("smtp.gmail.com", 465, SecureSocketOptions.SslOnConnect);
+                    await cliente.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.SslOnConnect);
                     await cliente.AuthenticateAsync(mailFrom, mailPassword);
                     await cliente.SendAsync(mensaje);
                     await cliente.DisconnectAsync(true);
@@ -395,41 +235,7 @@ namespace GestionMedica.Services
         {
             try
             {
-                using (var con = await dBUsuario.AbrirConexion())
-                {
-                    string query = @"SELECT c.Id,
-                                            c.IdUsuario,
-                                            c.FechaHora,
-                                            c.Estado,
-                                            c.IdEspecialidad,
-                                            c.Precio,
-                                            CONCAT(u.Nombre, ' ', COALESCE(u.Apellido,'')) AS Paciente
-                                     FROM Citas c
-                                     INNER JOIN Usuario u ON c.IdUsuario = u.Id
-                                     WHERE c.Id = @Id";
-
-                    using (var cmd = new MySqlCommand(query, con))
-                    {
-                        cmd.Parameters.AddWithValue("@Id", citaId);
-
-                        using (var reader = (MySqlDataReader)await cmd.ExecuteReaderAsync())
-                        {
-                            if (await reader.ReadAsync())
-                            {
-                                return new Citas
-                                {
-                                    Id             = Convert.ToInt32(reader["Id"]),
-                                    IdUsuario      = Convert.ToInt32(reader["IdUsuario"]),
-                                    FechaHora      = Convert.ToDateTime(reader["FechaHora"]),
-                                    Estado         = (EstadoCita)Convert.ToInt32(reader["Estado"]),
-                                    IdEspecialidad = (TipoEspecialidad)Convert.ToInt32(reader["IdEspecialidad"]),
-                                    Precio         = reader["Precio"] != DBNull.Value ? Convert.ToDecimal(reader["Precio"]) : 0m,
-                                    Paciente       = reader["Paciente"]?.ToString().Trim()
-                                };
-                            }
-                        }
-                    }
-                }
+                return await _repository.ObtenerCitaCompletaAsync(citaId);
             }
             catch (Exception ex)
             {
@@ -439,70 +245,29 @@ namespace GestionMedica.Services
         }
         public async Task<Usuario> VerificarCredenciales(string correo, string contrasena)
         {
-            using (var con = await dBUsuario.AbrirConexion())
+            try
             {
-                try
-                {
-                    string query = @"SELECT Id, Nombre, Apellido, Correo, Contrasena, Activo, IdRol
-                                     FROM Usuario
-                                     WHERE Correo = @Correo AND Activo = 1";
-
-                    using (MySqlCommand cmd = new MySqlCommand(query, con))
-                    {
-                        cmd.Parameters.AddWithValue("@Correo", correo);
-
-                        using (var reader = await cmd.ExecuteReaderAsync())
-                        {
-                            if (await reader.ReadAsync())
-                            {
-                                string hash = reader["Contrasena"].ToString();
-
-                                if (BCrypt.Net.BCrypt.Verify(contrasena, hash))
-                                {
-                                    return new Usuario
-                                    {
-                                        Id = Convert.ToInt32(reader["Id"]),
-                                        Nombre = reader["Nombre"].ToString(),
-                                        Apellido = reader["Apellido"].ToString(),
-                                        Correo = reader["Correo"].ToString(),
-                                        Activo = Convert.ToBoolean(reader["Activo"]),
-                                        IdRol = Convert.ToInt32(reader["IdRol"])
-                                    };
-                                }
-                            }
-                        }
-                    }
-                }
-                catch(Exception ex)
-                {
-                    if (ex.InnerException != null)
-                        Debug.WriteLine($"[InnerException] {ex.InnerException.Message}");
-                }
+                var usuario = await _repository.ObtenerUsuarioActivoPorCorreoAsync(correo);
+                return usuario != null && BCrypt.Net.BCrypt.Verify(contrasena, usuario.Contrasena)
+                    ? usuario
+                    : null;
             }
-
-            return null;
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                    Debug.WriteLine($"[InnerException] {ex.InnerException.Message}");
+                return null;
+            }
         }
 
         public async Task<(bool ok, string msg)> DesactivarUsuario(int id)
         {
             try
             {
-                using (var con = await dBUsuario.AbrirConexion())
-                {
-                    string query = @"UPDATE Usuario
-                                     SET Activo = 0
-                                     WHERE Id = @Id AND Activo = 1";
-
-                    using (MySqlCommand cmd = new MySqlCommand(query, con))
-                    {
-                        cmd.Parameters.AddWithValue("@Id", id);
-                        int filas = await cmd.ExecuteNonQueryAsync();
-
-                        return filas > 0
-                            ? (true, "Usuario desactivado correctamente")
-                            : (false, "Usuario no encontrado o ya desactivado");
-                    }
-                }
+                int affected = await _repository.DesactivarUsuarioAsync(id);
+                return affected > 0
+                    ? (true, "Usuario desactivado correctamente")
+                    : (false, "Usuario no encontrado o ya desactivado");
             }
             catch (Exception ex)
             {
@@ -512,115 +277,26 @@ namespace GestionMedica.Services
 
         public async Task<List<Citas>> ObtenerCitasMedicas()
         {
-            var citas = new List<Citas>();
-
             try
             {
-                using (var con = await dBUsuario.AbrirConexion())
-                {
-                    string query = @"SELECT c.Id,
-                                            c.IdUsuario,
-                                            c.FechaHora,
-                                            c.Estado,
-                                            c.IdEspecialidad,
-                                            c.Precio,
-                                            CONCAT(u.Nombre, ' ', COALESCE(u.Apellido, '')) AS Paciente
-                                     FROM Citas c
-                                     INNER JOIN Usuario u ON c.IdUsuario = u.Id
-                                     ORDER BY c.FechaHora DESC";
-
-                    using (MySqlCommand cmd = new MySqlCommand(query, con))
-                    using (MySqlDataReader reader = (MySqlDataReader)await cmd.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            citas.Add(new Citas
-                            {
-                                Id = Convert.ToInt32(reader["Id"]),
-                                IdUsuario = Convert.ToInt32(reader["IdUsuario"]),
-                                FechaHora = Convert.ToDateTime(reader["FechaHora"]),
-                                Estado = (EstadoCita)Convert.ToInt32(reader["Estado"]),
-                                IdEspecialidad = (TipoEspecialidad)Convert.ToInt32(reader["IdEspecialidad"]),
-                                Precio = reader["Precio"] != DBNull.Value ? Convert.ToDecimal(reader["Precio"]) : 0m,
-                                Paciente = reader["Paciente"]?.ToString().Trim()
-                            });
-                        }
-                    }
-                }
-            }
-            catch (MySqlException mex) when (mex.Number == 1054)
-            {
-                return await ObtenerCitasMedicasSinPrecio();
-            }
-            return citas;
-        }
-
-        private async Task<List<Citas>> ObtenerCitasMedicasSinPrecio()
-        {
-            var citas = new List<Citas>();
-
-            try
-            {
-                using (var con = await dBUsuario.AbrirConexion())
-                {
-                    string query = @"SELECT c.Id,
-                                            c.IdUsuario,
-                                            c.FechaHora,
-                                            c.Estado,
-                                            c.IdEspecialidad,
-                                            CONCAT(u.Nombre, ' ', COALESCE(u.Apellido, '')) AS Paciente
-                                     FROM Citas c
-                                     INNER JOIN Usuario u ON c.IdUsuario = u.Id
-                                     ORDER BY c.FechaHora DESC";
-
-                    using (MySqlCommand cmd = new MySqlCommand(query, con))
-                    using (MySqlDataReader reader = (MySqlDataReader)await cmd.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            citas.Add(new Citas
-                            {
-                                Id = Convert.ToInt32(reader["Id"]),
-                                IdUsuario = Convert.ToInt32(reader["IdUsuario"]),
-                                FechaHora = Convert.ToDateTime(reader["FechaHora"]),
-                                Estado = (EstadoCita)Convert.ToInt32(reader["Estado"]),
-                                IdEspecialidad = (TipoEspecialidad)Convert.ToInt32(reader["IdEspecialidad"]),
-                                Precio = 0m,
-                                Paciente = reader["Paciente"]?.ToString().Trim()
-                            });
-                        }
-                    }
-                }
+                return await _repository.ObtenerCitasAsync();
             }
             catch (Exception ex)
             {
                 if (ex.InnerException != null)
                     Debug.WriteLine($"[InnerException] {ex.InnerException.Message}");
+                return new List<Citas>();
             }
-            return citas;
         }
 
         public async Task<(bool ok, string msg)> CambiarEstadoCita(int citaId, EstadoCita estado)
         {
             try
             {
-                using (var con = await dBUsuario.AbrirConexion())
-                {
-                    string query = @"UPDATE Citas
-                                     SET Estado = @Estado
-                                     WHERE Id = @Id";
-
-                    using (MySqlCommand cmd = new MySqlCommand(query, con))
-                    {
-                        cmd.Parameters.AddWithValue("@Id", citaId);
-                        cmd.Parameters.AddWithValue("@Estado", (int)estado);
-
-                        int filas = await cmd.ExecuteNonQueryAsync();
-                        return filas > 0
-                            ? (true, $"Estado de cita actualizado a {estado}")
-                            : (false, "La cita no existe");
-                    }
-                }
+                int affected = await _repository.CambiarEstadoCitaAsync(citaId, estado);
+                return affected > 0
+                    ? (true, $"Estado de cita actualizado a {estado}")
+                    : (false, "La cita no existe");
             }
             catch (Exception ex)
             {

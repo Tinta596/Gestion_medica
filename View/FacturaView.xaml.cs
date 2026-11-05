@@ -78,7 +78,10 @@ namespace Gestion.Views
                 return;
             }
 
-            var factura = await _controller.ObtenerFactura(id);
+            var factura = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.ObtenerFactura(id),
+                "Consultando factura...");
 
             if (factura == null)
             {
@@ -131,7 +134,10 @@ namespace Gestion.Views
                 Items = items
             };
 
-            int facturaId = await _controller.CrearFactura(factura);
+            int facturaId = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.CrearFactura(factura),
+                "Creando factura...");
 
             if (facturaId <= 0)
             {
@@ -184,7 +190,10 @@ namespace Gestion.Views
                 return;
             }
 
-            var facturas = await _controller.ObtenerFacturasUsuario(usuarioId);
+            var facturas = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.ObtenerFacturasUsuario(usuarioId),
+                "Cargando facturas del usuario...");
 
             if (facturas == null || facturas.Count == 0)
             {
@@ -231,7 +240,10 @@ namespace Gestion.Views
                 return;
             }
 
-            bool ok = await _controller.GenerarPdf(id, ruta);
+            bool ok = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.GenerarPdf(id, ruta),
+                "Generando el PDF de la factura...");
             MostrarFeedback(TxtMsgPdf,
                 ok ? $"PDF generado correctamente en:\n{ruta}" : "No se pudo generar el PDF.",
                 esError: !ok);
@@ -259,7 +271,10 @@ namespace Gestion.Views
 
             if (confirmacion != MessageBoxResult.Yes) return;
 
-            bool ok = await _controller.CancelarFactura(id);
+            bool ok = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.CancelarFactura(id),
+                "Cancelando factura...");
             MostrarFeedback(TxtMsgCancelarFactura,
                 ok ? "Factura cancelada correctamente." : "No se pudo cancelar la factura.",
                 esError: !ok);

@@ -42,7 +42,10 @@ namespace Gestion.Views
             BtnLogin.IsEnabled = false;
             BtnLogin.Content = "Verificando...";
 
-            var (ok, msg, usuario) = await _controller.Login(correo, contrasena);
+            var (ok, msg, usuario) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.Login(correo, contrasena),
+                "Verificando tus credenciales...");
 
             BtnLogin.IsEnabled = true;
             BtnLogin.Content = "INGRESAR AL SISTEMA";

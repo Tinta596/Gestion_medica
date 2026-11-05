@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-C:\Users\alram\source\repos\Gestion\obj\Debug\
+c:\Users\alram\OneDrive\Documentos\GitHub\Gestion_Medica\Gestion_medica\obj\Debug\
 Gestion
 none
 false
 DEBUG;TRACE
-C:\Users\alram\source\repos\Gestion\App.xaml
-7-413637839
+c:\Users\alram\OneDrive\Documentos\GitHub\Gestion_Medica\Gestion_medica\App.xaml
+8-166049295
 
-30-1398511517
-1631878071619
-MainWindow.xaml;View\AdminView.xaml;View\DoctorView.xaml;View\FacturaView.xaml;View\LoginView.xaml;View\RegisterView.xaml;View\UsuarioView.xaml;
+37-915328458
+1632073523900
+MainWindow.xaml;View\AdminView.xaml;View\DoctorView.xaml;View\FacturaView.xaml;View\LoginView.xaml;View\LoadingWindow.xaml;View\RegisterView.xaml;View\UsuarioView.xaml;
 
 False
 

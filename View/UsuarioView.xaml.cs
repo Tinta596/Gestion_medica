@@ -137,7 +137,10 @@ namespace Gestion.Views
                 return;
             }
 
-            var (ok, _, citas) = await _controller.MisCitas(_usuarioActual.Id);
+            var (ok, _, citas) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.MisCitas(_usuarioActual.Id),
+                "Cargando tus citas...");
 
             if (!ok || citas == null || citas.Count == 0)
             {
@@ -265,7 +268,10 @@ namespace Gestion.Views
 
             // — Verificar disponibilidad
             var especialidad = (TipoEspecialidad)(CmbEspecialidad.SelectedIndex + 1);
-            var (_, _, disponible) = await _adminController.VerificarDisponibilidad(fecha, especialidad);
+            var (_, _, disponible) = await LoadingDialogService.RunAsync(
+                this,
+                () => _adminController.VerificarDisponibilidad(fecha, especialidad),
+                "Verificando disponibilidad...");
 
             if (!disponible)
             {
@@ -286,7 +292,10 @@ namespace Gestion.Views
             };
 
             var doctorCtrl = new DoctorController();
-            var (okCita, msgCita) = await doctorCtrl.ProgramarCita(nuevaCita);
+            var (okCita, msgCita) = await LoadingDialogService.RunAsync(
+                this,
+                () => doctorCtrl.ProgramarCita(nuevaCita),
+                "Agendando tu cita...");
 
             if (!okCita)
             {
@@ -294,7 +303,10 @@ namespace Gestion.Views
                 return;
             }
 
-            await _adminController.EnviarCorreo(_usuarioActual.Correo, nuevaCita);
+            await LoadingDialogService.RunAsync(
+                this,
+                () => _adminController.EnviarCorreo(_usuarioActual.Correo, nuevaCita),
+                "Enviando confirmación...");
 
             var factura = new Factura
             {
@@ -311,7 +323,10 @@ namespace Gestion.Views
                 }
             };
 
-            int facturaId = await _facturaController.CrearFactura(factura);
+            int facturaId = await LoadingDialogService.RunAsync(
+                this,
+                () => _facturaController.CrearFactura(factura),
+                "Generando la factura...");
 
             MostrarFeedback(TxtMsgBuscarCita,
                 $"✔ Cita agendada para el {fecha:dd/MM/yyyy} a las {fecha:HH:mm}. " +
@@ -354,7 +369,10 @@ namespace Gestion.Views
                 return;
             }
 
-            var facturas = await _facturaController.ObtenerFacturasUsuario(_usuarioActual.Id);
+            var facturas = await LoadingDialogService.RunAsync(
+                this,
+                () => _facturaController.ObtenerFacturasUsuario(_usuarioActual.Id),
+                "Cargando tus facturas...");
 
             if (facturas == null || facturas.Count == 0)
             {
@@ -392,7 +410,10 @@ namespace Gestion.Views
 
             if (dialogo.ShowDialog() != true) return;
 
-            bool ok = await _facturaController.GenerarPdf(facturaSeleccionada.Id, dialogo.FileName);
+            bool ok = await LoadingDialogService.RunAsync(
+                this,
+                () => _facturaController.GenerarPdf(facturaSeleccionada.Id, dialogo.FileName),
+                "Generando el PDF...");
 
             if (!ok)
             {
@@ -431,7 +452,10 @@ namespace Gestion.Views
                 return;
             }
 
-            var (ok, msg, estado) = await _controller.ConsultarEstadoCita(citaId);
+            var (ok, msg, estado) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.ConsultarEstadoCita(citaId),
+                "Consultando el estado de la cita...");
 
             if (!ok)
             {
@@ -455,7 +479,10 @@ namespace Gestion.Views
             PanelPromedio.Visibility = Visibility.Collapsed;
             PanelEstadosCitas.Visibility = Visibility.Collapsed;
 
-            var (ok, msg, promedio) = await _controller.PromedioCitas();
+            var (ok, msg, promedio) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.PromedioCitas(),
+                "Calculando estadísticas...");
 
             if (!ok)
             {
@@ -468,7 +495,10 @@ namespace Gestion.Views
 
             if (_usuarioActual == null || _usuarioActual.Id <= 0) return;
 
-            var (okEstados, msgEstados, resumen) = await _controller.ResumenEstados(_usuarioActual.Id);
+            var (okEstados, msgEstados, resumen) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.ResumenEstados(_usuarioActual.Id),
+                "Cargando resumen de citas...");
             if (!okEstados || resumen == null)
             {
                 MessageBox.Show(msgEstados, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -492,7 +522,10 @@ namespace Gestion.Views
             LvCitasCanceladas.ItemsSource = null;
             TxtSinCanceladas.Visibility = Visibility.Collapsed;
 
-            var (okCitas, msgCitas, citas) = await _controller.MisCitas(_usuarioActual.Id);
+            var (okCitas, msgCitas, citas) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.MisCitas(_usuarioActual.Id),
+                "Cargando citas canceladas...");
             if (!okCitas || citas == null)
             {
                 TxtSinCanceladas.Text = msgCitas;
@@ -543,7 +576,10 @@ namespace Gestion.Views
 
             if (confirmacion != MessageBoxResult.Yes) return;
 
-            var (ok, msg) = await _controller.CancelarCita(citaId);
+            var (ok, msg) = await LoadingDialogService.RunAsync(
+                this,
+                () => _controller.CancelarCita(citaId),
+                "Cancelando la cita...");
             MostrarFeedback(TxtMsgCancelar, msg, esError: !ok);
 
             if (ok)
